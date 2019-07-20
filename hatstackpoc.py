@@ -1,6 +1,22 @@
 # hatstack proof of concept
 import sys
 
+class Token():
+    def __init__(self):
+        self.line = 0
+        self.position = 0
+        self.file = ""
+        self.type = ""
+        # types include instruction, alias, label, literal
+
+class Function():
+    # sort of a mini interpreter
+    def __init__(self):
+        self.ip = 0
+        self.labels = {}
+        self.mem = {}
+        self.tokens = []
+
 class Interpreter():
     
     # methods with names starting with i are reserved for the interpreter's use
@@ -15,31 +31,31 @@ class Interpreter():
         
     def i_add(self):
         val = self.pop(self.stack) + self.pop(self.stack)
-        self.last_val 
+        self.last_val = val
         self.stack.append(val)
         self.ip+=1
 
     def i_sub(self):
         val = self.pop(self.stack) - self.pop(self.stack)
-        self.last_val 
+        self.last_val = val
         self.stack.append(val)
         self.ip+=1
 
     def i_mul(self):
         val = self.pop(self.stack) * self.pop(self.stack)
-        self.last_val 
+        self.last_val = val
         self.stack.append(val)
         self.ip+=1
 
     def i_div(self):
         val = self.pop(self.stack) // self.pop(self.stack)
-        self.last_val 
+        self.last_val = val
         self.stack.append(val)
         self.ip+=1
 
     def i_mod(self):
         val = self.pop(self.stack) % self.pop(self.stack)
-        self.last_val 
+        self.last_val = val
         self.stack.append(val)
         self.ip+=1
 
@@ -50,21 +66,24 @@ class Interpreter():
 
     def i_jez(self):
         self.ip+=1
-        if self.last_val != 0:
+        if self.pop(self.stack) != 0:
+            self.ip+=1
             return
         label = self.tokens[self.ip]
         self.ip = self.labels[label]
 
     def i_jlz(self):
         self.ip+=1
-        if not self.last_val < 0:
+        if not self.pop(self.stack) < 0:
+            self.ip+=1
             return
         label = self.tokens[self.ip]
         self.ip = self.labels[label]
 
     def i_jgz(self):
         self.ip+=1
-        if not self.last_val > 0:
+        if not self.pop(self.stack) > 0:
+            self.ip+=1
             return
         label = self.tokens[self.ip]
         self.ip = self.labels[label]
@@ -73,15 +92,44 @@ class Interpreter():
         self.ip+=1
         alias = self.tokens[self.ip]
         if alias not in self.mem:
-            self.mem[alias]
+            self.mem[alias] = 0 # maybe should throw an error?
         self.stack.append(self.mem[alias])
+        self.ip+=1
+        
+    def i_loadi(self):
+        self.ip+=1
+        alias = self.pop(self.stack)
+        if alias not in self.mem:
+            self.mem[alias] = 0
+        self.stack.append(self.mem[alias])
+        
+    def i_savei(self):
+        self.ip+=1
+        alias = self.pop(self.stack)
+        self.mem[alias] = self.pop(self.stack)
 
     def i_save(self):
         self.ip+=1
         alias = self.tokens[self.ip]
         self.ip+=1
         self.mem[alias] = self.pop(self.stack)
-
+        
+    def i_push(self):
+        self.ip+=1
+        self.stack.append( int(self.tokens[self.ip]) )
+        self.ip+=1
+        
+    def i_dump(self):
+        self.dump()
+        self.ip+=1
+    
+    def i_del(self):
+        self.pop(self.stack)
+        self.ip+=1
+        
+    def i_exit(self):
+        self.exit = True
+        
     def __init__(self):
         self.program = ""
         self.tokens = []
@@ -94,6 +142,8 @@ class Interpreter():
         self.last_val = None
         self.ip = 0
         self.exit = False
+        self.functions = {}
+        self.function_stack = []
         self.instructions = {
                 "in": self.i_in,
                 "add": self.i_add,
@@ -106,6 +156,14 @@ class Interpreter():
                 "jez": self.i_jez,
                 "jlz": self.i_jlz,
                 "jgz": self.i_jgz,
+                "save": self.i_save,
+                "savei": self.i_savei,
+                "load": self.i_load,
+                "loadi": self.i_loadi,
+                "dump": self.i_dump,
+                "push": self.i_push,
+                "del": self.i_del,
+                "exit": self.i_exit,
                 }
     
     def pop(self, source):
@@ -130,38 +188,58 @@ class Interpreter():
             i+=1
         
     def load_problem(self, problem = None):
-        self.inp = [3, 9, 10, 5]
-        self.validate = [15, 12]
+        #self.inp = [3, 9, 10, 5]
+        #self.validate = [15, 12]
+        #self.inp = [9,7,20,13]
+        self.inp = [0,9,12,7,24]
+        self.validate = [1,1]
         
     def run(self):
         self.ip = 0
+        #while self.ip < 4:
+            #print(len(self.tokens))
         while self.ip < len(self.tokens):
+            #print(self.ip)
             if self.exit:
                 break
             token = self.tokens[self.ip]
             self.instructions[token]()
             
-    def is_valid(self, simulate = True):
-        limit = 3
-        if simulate:
-            for i in range(limit):
-                self.run()
-                if len(self.inp) == 0 or self.exit:
-                    break
-            if i == limit-1:
-                print("Iteration limit reached.", self.inp)
-                return
+    def run_empty(self):
+        for i in range(3):
+            self.run()
+            if len(self.inp) == 0 or self.exit:
+                break
+            
+    def is_valid(self):
         if str(self.validate) == str(self.out):
-            print("Program successfully validated!", self.out)
+            print("Program successfully validated!")
         else:
-            print("Output was incorrect. Your output:", self.out)
-
+            print("Output was incorrect.")
+            self.dump()
+            
+    def dump(self):
+        print("in:", self.inp)
+        print("out:", self.out)
+        print("expected:", self.validate)
+        print("stack:", self.stack)
+        print("lables:", self.labels)
+        print("aliases:", self.mem)
+        print("ip:", self.ip)
+        print("last value", self.last_val)
 
 if __name__ == "__main__":
+    program = ""
     if len(sys.argv) == 1:
-        print("Pass a valid program name.")
+        program = "insert.hat"
+        #program = "fib.hat"
     else:
-        interp = Interpreter()
-        interp.load_problem()
-        interp.load_program(sys.argv[1])
-        interp.is_valid()
+        program = sys.argv[1]
+    interp = Interpreter()
+    interp.load_problem()
+    interp.load_program(program)
+    #interp.run_empty()
+    #print(interp.tokens)
+    interp.run()
+    #interp.is_valid()
+    #interp.dump()

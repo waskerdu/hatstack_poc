@@ -1,0 +1,62 @@
+dump
+push 0
+save current
+push 0
+save hold
+
+#top
+in
+save temp
+load temp
+jez output
+
+#try
+load current
+loadi
+jez insert
+load current
+loadi
+load temp
+sub
+jlz swap
+#inc
+load current
+push 1
+add
+save current
+jump try
+
+#insert
+load temp
+load current
+savei
+push 0
+save current
+jump top
+
+#swap
+load current
+loadi
+save hold
+load temp
+load current
+savei
+load hold
+save temp
+jump inc
+
+#output
+load current
+loadi
+jez done
+load current
+loadi
+out
+load current
+push 1
+add
+save current
+jump output
+
+#done
+dump

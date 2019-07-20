@@ -1,0 +1,25 @@
+push 1
+push 1
+push 1
+out
+in
+save max
+
+#top
+save b
+save a
+load a
+load b
+add
+save c
+load a
+load b
+out
+load b
+load c
+load c
+load max
+sub
+jgz top
+
+dump
