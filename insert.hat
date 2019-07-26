@@ -19,6 +19,7 @@ loadi
 load temp
 sub
 jlz swap
+
 #inc
 load current
 push 1

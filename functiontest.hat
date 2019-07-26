@@ -1,0 +1,9 @@
+dump
+push 1
+push 1
+@hello
+add
+endfunc
+hello
+out
+dump
