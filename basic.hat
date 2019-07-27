@@ -1,0 +1,20 @@
+push 0
+save bacon
+in
+save spam
+in
+save eggs
+#loop
+load eggs
+load bacon
+add
+save bacon
+push 1
+load spam
+sub
+save spam
+load spam
+jnz loop
+load bacon
+out
+dump

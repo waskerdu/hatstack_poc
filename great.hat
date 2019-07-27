@@ -1,0 +1,25 @@
+// find greatest
+#top
+in
+save big
+
+#loop
+in
+save temp
+load temp
+jez done
+load temp
+load big
+sub
+jlz replace
+jump loop
+
+#done
+load big
+out
+jump top
+
+#replace
+load temp
+save big
+jump loop

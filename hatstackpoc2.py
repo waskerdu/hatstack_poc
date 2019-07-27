@@ -17,6 +17,8 @@ class Function():
     def throw_error(self, message):
         if not self.error:
             self.error = True
+            if root!=None:
+                root.error=True
             print(message)
             
     def pop(self):
@@ -135,7 +137,10 @@ class Function():
             #print(val, self)
             self.stack.append( val )
         else:
-            self.throw_error("Inbox empty, nothing to pop!")
+            #self.throw_error("Inbox empty, nothing to pop!")
+            self.end=True
+            if self.root!=None:
+                root.end=True
         self.ip+=1
         
     def i_dump(self):
@@ -178,7 +183,10 @@ class Function():
             if t.type == "label":
                 self.labels[t.val] = i
             elif t.type == "function":
-                f = Function(t.val, self.stack, self.inbox, self.outbox)
+                if self.root == None:
+                    f = Function(t.val, self)
+                else:
+                    f = Function(t.val, self.root)
                 self.functions[t.val] = f
                 i += f.parse(tokens, i+start+1)
                 continue
@@ -199,18 +207,18 @@ class Function():
         #print("endparse")
         return i
         
-    def __init__(self, name, stack, inbox, outbox):
+    def __init__(self, name, root):
         self.name = name
         self.tokens = []
-        self.inbox = inbox
-        self.outbox = outbox
+        self.inbox = root.inbox
+        self.outbox = root.outbox
         self.ip = 0
         self.stack = stack
         self.aliases = {}
         self.labels = {}
         self.functions = {}
+        self.root = root
         self.error = False
-        self.parent = None
         
     def __str__(self):
         out = ["name: ", self.name, "ip:", str(self.ip), "stack:", str(self.stack)]
@@ -242,7 +250,7 @@ class Function():
                 self.ip+=1
             else:
                 self.throw_error("'"+t.val+"' on line "+ str(t.line+1) + " is not an instruction")
-            if self.error:
+            if self.error or self.end:
                 break
         #print(self.ip)
         #print(self)
@@ -261,8 +269,10 @@ class Interpreter(Function):
         self.labels = {}
         self.functions = {}
         self.error = False
+        self.end = False
         self.problem = None
         self.program = None
+        self.root = None
         
     def __str__(self):
         out = ["inbox:", str(self.inbox), "outbox:", str(self.outbox), "valid:", str(self.valid_outbox), "stack: ", str(self.stack)]
@@ -312,6 +322,7 @@ class Interpreter(Function):
         f = open(filename)
         problem = json.loads(f.read())
         self.inbox = problem["inbox"]
+        self.inbox.reverse()
         self.valid_outbox = problem["valid_outbox"]
         f.close()
         
@@ -338,15 +349,21 @@ class Interpreter(Function):
         else:
             print("Output is not correct.")
             return False
-        
-interp = Interpreter()
-interp.load_problem("insert.prob")
-interp.load_program("insert.hat")
-#interp.load_program("functiontest.hat")
-#print(interp)
-#interp.dump_tokens()
-interp.run()
-print(interp)
-#interp.validate()
+		
+if __name__ == "__main__":
+	
+	interp = Interpreter()
+	if len(sys.argv) > 2:
+		interp.load_problem(sys.argv[1])
+		interp.load_program(sys.argv[2])
+	else:
+		interp.load_problem("insert.prob")
+		interp.load_program("insert.hat")
+	#interp.load_program("functiontest.hat")
+	#print(interp)
+	#interp.dump_tokens()
+	interp.run()
+	#print(interp)
+	interp.validate()
         
 #interpreter.create_problem("fib.prob", [9], [1,1,2,3,5,8])
