@@ -1,20 +1,58 @@
+in
+save numvars
 push 0
-save bacon
-in
-save spam
-in
-save eggs
+save bigsum
+
+push 0
+save i
+
 #loop
-load eggs
-load bacon
-add
-save bacon
+in
+save temp
+load temp
+jez find
+load temp
+load i
+savei
 push 1
-load spam
-sub
-save spam
-load spam
-jnz loop
-load bacon
-out
+load i
+add
+save i
 dump
+jump loop
+
+#find
+load numvars
+jez done
+push 1
+load numvars
+sub
+save numvars
+push 0
+save j
+push 0
+save bigindex
+push 0
+save big 
+
+#getbig
+load j
+loadi
+load big
+sub
+jlz getbig
+load j
+save bigindex
+load j
+loadi
+save big
+
+//inc j
+load j
+push 1
+add
+save j
+jump getbig
+
+
+#done // bigsum is accurate

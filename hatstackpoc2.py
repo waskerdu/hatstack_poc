@@ -213,12 +213,13 @@ class Function():
         self.inbox = root.inbox
         self.outbox = root.outbox
         self.ip = 0
-        self.stack = stack
+        self.stack = root.stack
         self.aliases = {}
         self.labels = {}
         self.functions = {}
         self.root = root
         self.error = False
+        self.end = False
         
     def __str__(self):
         out = ["name: ", self.name, "ip:", str(self.ip), "stack:", str(self.stack)]

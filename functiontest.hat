@@ -1,9 +1,12 @@
 dump
 push 1
 push 1
+
 @hello
 add
+dump
 endfunc
+
 hello
 out
 dump
